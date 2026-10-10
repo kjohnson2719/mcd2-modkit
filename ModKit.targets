@@ -19,6 +19,8 @@
         #if DEBUG is always false. Releases (neorune pack builds Release) don't get it.
   -->
   <ItemGroup>
+    <!-- When the kit is inside the mod's folder (the build server's copy), .NET already compiles its files: once is enough. -->
+    <Compile Remove="$(MSBuildThisFileDirectory)src\**\*.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)src\**\*.cs" Link="ModKit\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
