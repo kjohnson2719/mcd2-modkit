@@ -1,0 +1,51 @@
+<Project>
+  <!--
+    The mod kit: shared C# for Minecraft Dungeons II mods made with NeoRune. It's compiled into each mod (players install
+    nothing extra). Import it at the end of a mod's .csproj:
+
+      <PropertyGroup>
+        <ModKitRepo>owner/repo</ModKitRepo>   the mod's GitHub repository, for the update check
+        <ModKitDir Condition="'$(ModKitDir)' == '' and Exists('$(MSBuildProjectDirectory)\ModKit\ModKit.targets')">$(MSBuildProjectDirectory)\ModKit\</ModKitDir>
+        <ModKitDir Condition="'$(ModKitDir)' == ''">$(MSBuildProjectDirectory)\..\ModKit\</ModKitDir>
+      </PropertyGroup>
+      <Import Project="$(ModKitDir)ModKit.targets" />
+
+    (A ModKit folder in the mod is the copy the build server checks out; next to the mod is the one being worked on.)
+
+    It adds:
+      - the kit's sources (src/**/*.cs);
+      - ModInfo: the mod's title, version and GitHub repository as constants (made at build time from the .csproj);
+      - DEBUG for development builds: NeoRune compiles the sources itself with its own symbols, so without this,
+        #if DEBUG is always false. Releases (neorune pack builds Release) don't get it.
+  -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)src\**\*.cs" Link="ModKit\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <Target Name="ModKitInfo" BeforeTargets="CoreCompile">
+    <PropertyGroup>
+      <_ModKitInfoFile>$(IntermediateOutputPath)ModKitInfo.g.cs</_ModKitInfoFile>
+    </PropertyGroup>
+    <ItemGroup>
+      <_ModKitInfoLine Include="// Made by ModKit.targets from the mod's .csproj: don't edit." />
+      <_ModKitInfoLine Include="namespace ModKit" />
+      <_ModKitInfoLine Include="{" />
+      <_ModKitInfoLine Include="    /// &lt;summary&gt;The mod's own details, from its .csproj.&lt;/summary&gt;" />
+      <_ModKitInfoLine Include="    public static class ModInfo" />
+      <_ModKitInfoLine Include="    {" />
+      <_ModKitInfoLine Include="        public const string Title = &quot;$(NeoRuneModTitle)&quot;%3B" />
+      <_ModKitInfoLine Include="        public const string Version = &quot;$(Version)&quot;%3B" />
+      <_ModKitInfoLine Include="        public const string Repo = &quot;$(ModKitRepo)&quot;%3B" />
+      <_ModKitInfoLine Include="    }" />
+      <_ModKitInfoLine Include="}" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(_ModKitInfoFile)" Lines="@(_ModKitInfoLine)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <Compile Include="$(_ModKitInfoFile)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="ModKitDebugSymbol" AfterTargets="_NeoRunePrepare" BeforeTargets="NeoRuneCompile" Condition="'$(Configuration)' == 'Debug' and '$(_NeoRuneRsp)' != ''">
+    <WriteLinesToFile File="$(_NeoRuneRsp)" Lines="--define=DEBUG" Overwrite="false" Condition="!$([System.IO.File]::ReadAllText('$(_NeoRuneRsp)').Contains('--define=DEBUG'))" />
+  </Target>
+</Project>
