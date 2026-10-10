@@ -8,7 +8,8 @@ What's in it, all found out in game while making those mods:
 
 | | |
 | --- | --- |
-| `UpdateCheck` | Tells the player when a newer version of the mod is out on GitHub (a toast, once per version). |
+| `UpdateCheck` | Tells the player when a newer version of the mod is out on GitHub, once per version. Several mods with the kit share one notice. |
+| `UpdateNotice` | That notice: the game's own panel (ribbon and frame), small, in its toast area. |
 | `MenuKeys` | Keys while one of the game's menus is open (which the usual key listeners don't hear). |
 | `ActionIcons` | The game's button icons by key, for hints that switch with the controller like the game's. |
 | `Screens` | Whether a widget really shows (through switchers), the controller in use, a screen's scale. |
